@@ -1,0 +1,5 @@
+- better error handling
+- implement dynamic array
+- reuse wrap function
+- Gui controls used: button, spinner, value box  
+- add README

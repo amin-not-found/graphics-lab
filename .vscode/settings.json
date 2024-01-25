@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "math.h": "c",
+        "raylib.h": "c",
+        "raygui.h": "c",
+        "assert.h": "c",
+        "iterator": "c",
+        "memory": "c",
+        "vector": "c",
+        "xmemory": "c",
+        "xstring": "c",
+        "xutility": "c"
+    }
+}
