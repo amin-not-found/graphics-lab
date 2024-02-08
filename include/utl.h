@@ -55,6 +55,7 @@ struct {
         (a).capacity = (new_size);                                             \
         (a).items =                                                            \
             UTL_REALLOC((a).items, (a).capacity * sizeof(*((a).items)));       \
+        if ((a).count > (a).capacity) (a).count = (a).capacity;                \
     } while (0);
 
 #define utl_da_append(a, item)                                                 \
