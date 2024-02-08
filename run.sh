@@ -7,7 +7,14 @@ if [ -z "$1" ]
     exit -1
 fi
 
+if [[ $(grep Microsoft /proc/version) ]]; then
+    MAKE=make.exe
+else 
+    MAKE=make
+fi
+
 FILE=$(basename $1)
 FILE=${FILE%%.*}
 
-make DEBUG=1 ${FILE} && ./bin/${FILE}.exe
+${MAKE} DEBUG=1 ${FILE} 
+./bin/${FILE}.exe

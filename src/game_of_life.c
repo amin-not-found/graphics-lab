@@ -15,7 +15,6 @@
 #define FPS 60
 // #define CIRCLE_BRUSH
 #define SQUARE_BRUSH
-// #define DEBUG
 
 typedef enum {
     GridWBox,
@@ -45,8 +44,8 @@ void recalculate_cell_size(int containerWidth, int containerHeight) {
     cell_width = (float)containerWidth / grid_w;
     cell_height = (float)containerHeight / (grid_h);
 #ifdef DEBUG
-    utl_log(, UTL_DEBUG "Set Cell Size - cw: %f, ch: %f\n", cellWidth,
-            cellHeight);
+    utl_log(UTL_DEBUG, "Set Cell Size - cw: %f, ch: %f\n", cell_width,
+            cell_width);
 #endif
 }
 
@@ -64,7 +63,7 @@ int neighbors_count(int x, int y) {
 
 void paint_cell(int x, int y) {
     DrawRectangle((int)(x * cell_width), (int)(y * cell_height) + PANEL_H,
-                  // using  ceilf for consistency when grid_w % cellWidth != 0
+                  // using  ceilf for consistency when grid_w % cell_width != 0
                   (int)ceilf(cell_width), (int)ceilf(cell_height),
                   *index2d(grid.items, x, y) ? WHITE : BLACK);
 }
@@ -228,11 +227,11 @@ int main(void) {
                 for (int x = 0; x < grid_w; x++) {
                     paint_cell(x, y);
 #ifdef DEBUG
-                    char *text[10];
-                    sprintf(text, "%d", neighborsCount(x, y));
-                    DrawText(text, (int)(x * cellWidth) + 5,
-                             (int)(y * cellHeight) + PANEL_H + 5, cellWidth / 3,
-                             RED);
+                    char text[10];
+                    sprintf(text, "%d", neighbors_count(x, y));
+                    DrawText(text, (int)(x * cell_width) + 5,
+                             (int)(y * cell_width) + PANEL_H + 5,
+                             cell_width / 3, RED);
 #endif
                 }
             }

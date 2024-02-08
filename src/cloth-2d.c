@@ -13,7 +13,6 @@
 #include <math.h>
 #include <time.h>
 
-// #define DEBUG
 #define FPS 100
 #define SCREEN_W 700
 #define SCREEN_H 1000

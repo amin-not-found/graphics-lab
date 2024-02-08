@@ -12,7 +12,7 @@ DEBUG ?= 0
 ifeq ($(DEBUG),0)
 	CFLAGS += -O2
 else
-	CFLAGS += -Og -g
+	CFLAGS += -Og -g -DDEBUG
 endif
 
 platform != uname -s
