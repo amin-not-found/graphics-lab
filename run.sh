@@ -1,26 +1,13 @@
 #/usr/bin/bash
 set -xe
 
-CFLAGS="-Wall -Wextra -pedantic -g"
-CFLAGS+=" -isystem ./ext/raygui -I./ext/raylib/include" 
-LDFLAGS="-lraylib"
-FILE="game_of_life"
-
-# check if using windows(wsl)
-if [[ $(grep Microsoft /proc/version) ]]; then
-    CC="cc.exe"
-    OUTPUT="${FILE}.exe"
-    LDFLAGS+=" -L./ext/raylib/lib_mingw -lopengl32 -lgdi32 -lwinmm"
-else # Assuming linux(not actually tested)
-    CC="cc"
-    OUTPUT="${FILE}.exe"
-    LDFLAGS+=" -L./ext/raylib/lib_linux -lGL -lm -lpthread -ldl -lrt"
+if [ -z "$1" ]
+  then
+    echo "No input file supplied as argument."
+    exit -1
 fi
 
+FILE=$(basename $1)
+FILE=${FILE%%.*}
 
-
-${CC} ${CFLAGS} -o ${FILE} ./${FILE}.c ${LDFLAGS}
-
-./${OUTPUT}
-
-
+DEBUG=1 ./build.sh $1 && ./bin/${FILE}.exe
