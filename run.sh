@@ -10,4 +10,4 @@ fi
 FILE=$(basename $1)
 FILE=${FILE%%.*}
 
-DEBUG=1 ./build.sh $1 && ./bin/${FILE}.exe
+make DEBUG=1 ${FILE} && ./bin/${FILE}.exe
