@@ -10,6 +10,13 @@
         "vector": "c",
         "xmemory": "c",
         "xstring": "c",
-        "xutility": "c"
-    }
+        "xutility": "c",
+        "time.h": "c"
+    },
+    "cSpell.words": [
+        "LIGHTGRAY",
+        "RAYGUI",
+        "symplectic",
+        "verlet"
+    ]
 }
