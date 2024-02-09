@@ -3,15 +3,13 @@
 // http://web.archive.org/web/20070610223835/http://www.teknikus.dk/tj/gdc2001.htm
 
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
 #include "raylib.h"
 #include "raymath.h"
 #define MOTION_IMPLEMENTATION
 #include "motion.h"
 #define UTL_IMPLEMENTATION
+#include "rayutl.h"
 #include "utl.h"
-#include <math.h>
-#include <time.h>
 
 #define FPS 100
 #define SCREEN_W 700
@@ -25,21 +23,6 @@
 #define INIT_G 98.1
 #define DRAG 0.01
 #define SPEED 5.0
-
-Vector2 g = {0, INIT_G};
-Vector2 wind = {0, 0};
-
-const char *help_text =
-    "You can use your cursor to drag points. \n\n\n\n"
-    "Also by clicking on points you can lock/unlock them. \n\n\n\n"
-    // TODO : implement:
-    //"If you press right click on a point it will be deleted.\n\n\n\n"
-    "Mouse wheen / left and right arrow: adjust wind speed \n\n\n\n"
-    "Plus / Minus: adjust gravity \n\n\n\n"
-    "Space: pause the simulation \n\n\n\n"
-    "Enter: advance simulation one step by pressing enter. \n\n\n\n"
-    " \n\n\n\n"
-    "Press Enter or click anywhere to resume. \n\n\n\n";
 
 typedef struct {
     Vector2 *items;
@@ -56,7 +39,7 @@ typedef struct {
 typedef struct {
     Particle *p1;
     Particle *p2;
-    float size;
+    int size;
 } Link;
 
 typedef struct {
@@ -67,8 +50,42 @@ typedef struct {
 
 #define index2d(pointer, x, y) ((pointer) + ((y) * GRID_W + (x)))
 
-void update_physics(Points points, Links links, float dt,
-                    Vector2Buffer buffer) {
+/* Declarations */
+Points points;
+Links links;
+Vector2Buffer buffer;
+
+bool paused = false;
+bool dragging = false;
+Particle *clicked_particle = NULL;
+
+Vector2 g = {0, INIT_G};
+Vector2 wind = {0, 0};
+
+const float start_x = (SCREEN_H - (GRID_W - 1) * DISTANCE) / 2;
+const float start_y = (SCREEN_W - (GRID_H - 1) * DISTANCE) / 4;
+
+const int help_x = SCREEN_H - 50;
+const int help_y = 36;
+const int help_font = 27;
+Rectangle help_rect;
+bool show_help = false;
+
+const char *help_text =
+    "You can use your cursor to drag points. \n\n\n\n"
+    "Also by clicking on points you can lock/unlock them. \n\n\n\n"
+    // TODO : implement:
+    //"If you press right click on a point it will be deleted.\n\n\n\n"
+    "Mouse wheen / left and right arrow: adjust wind speed \n\n\n\n"
+    "Plus / Minus: adjust gravity \n\n\n\n"
+    "Space: pause the simulation \n\n\n\n"
+    "Enter: advance simulation one step by pressing enter. \n\n\n\n"
+    " \n\n\n\n"
+    "Press Enter or click anywhere to resume. \n\n\n\n";
+/* End of declarations */
+
+
+void update_physics(float dt) {
     // Accumulate forces for each particle
     for (size_t i = 0; i < points.count; i++) {
         Particle *p = points.items + i;
@@ -124,17 +141,90 @@ Particle *nearest_particle(Points points, Vector2 pos) {
     return result;
 }
 
+void UpdateDrawFrame(void) {
+    // Handle input
+    if (IsKeyPressed(KEY_SPACE)) paused = !paused;
+    if (IsKeyPressed(KEY_ENTER)) update_physics(1 / (float)FPS);
+    if (IsKeyPressed(KEY_LEFT)) wind.x -= 100.0;
+    if (IsKeyPressed(KEY_RIGHT)) wind.x += 100.0;
+    if (IsKeyPressed(KEY_MINUS)) g.y -= INIT_G / 2;
+    if (IsKeyPressed(KEY_EQUAL)) g.y += INIT_G / 2;
+
+    wind.x += GetMouseWheelMove() * 40.0;
+    Vector2 mouse_pos = GetMousePosition();
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        // Set clicked_particle before dragging starts
+        // so it doesn't change with mouse pos
+        if (!dragging) {
+            clicked_particle = nearest_particle(points, mouse_pos);
+        }
+        // Initiate dragging if mouse position delta is big enough
+        if (Vector2Length(GetMouseDelta()) > 1.0 && clicked_particle != NULL) {
+            dragging = true;
+        }
+        // Update particle position based on mouse position
+        if (dragging) {
+            Vector2 drag_acc = Vector2Scale(
+                Vector2Subtract(mouse_pos, clicked_particle->r), 10.0);
+            mot_integrate_verlet(&clicked_particle->r, drag_acc,
+                                 clicked_particle->r, 0.1, 0);
+        }
+    }
+    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+        if (dragging) {
+            dragging = false;
+        } else if (clicked_particle != NULL) {
+            clicked_particle->is_static = !clicked_particle->is_static;
+        } else if (CheckCollisionPointRec(mouse_pos, help_rect)) {
+            show_help = true;
+        }
+    }
+
+    // Show help dialog
+    if (show_help) {
+        BeginDrawing();
+        DrawRectangle(100, 50, SCREEN_H - 200, SCREEN_W - 100, LIGHTGRAY);
+        // TODO : change font family
+        DrawText(help_text, 170, 130, 24, BLACK);
+        EndDrawing();
+
+        if (IsKeyReleased(KEY_ENTER) ||
+            IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+            show_help = false;
+        }
+        return;
+    }
+
+    if (!paused) update_physics(1 / (float)FPS);
+
+    BeginDrawing();
+    {
+        ClearBackground(BLACK);
+
+        for (size_t i = 0; i < links.count; i++) {
+            Link link = links.items[i];
+            DrawLine(link.p1->r.x, link.p1->r.y, link.p2->r.x, link.p2->r.y,
+                     GRAY);
+        }
+        for (size_t i = 0; i < points.count; i++) {
+            const Particle p = points.items[i];
+            DrawCircle(p.r.x, p.r.y, RADIUS, p.is_static ? RED : WHITE);
+        }
+
+        DrawRectangleRounded(help_rect, 0.1, 1, RED);
+        DrawText("?", help_x, help_y, help_font, LIGHTGRAY);
+    }
+    EndDrawing();
+}
+
 int main(void) {
 #ifdef DEBUG
     utl_set_log_level(UTL_DEBUG);
 #endif
-    Points points;
+
+    help_rect = (Rectangle){help_x - 13, help_y - 8, 41, 41};
     utl_da_init(points, GRID_W * GRID_H);
-
-    Links links;
     utl_da_init(links, 0);
-
-    Vector2Buffer buffer;
     utl_da_init(buffer, points.capacity);
     buffer.count = buffer.capacity;
 
@@ -142,19 +232,6 @@ int main(void) {
         utl_log(UTL_ERROR, "Couldn't allocate memory for simulation.");
         exit(-1);
     }
-
-    bool paused = false;
-    bool dragging = false;
-    Particle *clicked_particle = NULL;
-
-    const int help_x = SCREEN_H - 50;
-    const int help_y = 36;
-    const int help_font = 27;
-    const Rectangle help_rect = {help_x - 13, help_y - 8, 41, 41};
-    bool show_help = false;
-
-    const float start_x = (SCREEN_H - (GRID_W - 1) * DISTANCE) / 2;
-    const float start_y = (SCREEN_W - (GRID_H - 1) * DISTANCE) / 4;
 
     // Initialize points
     memset(points.items, 0, points.capacity * sizeof(*points.items));
@@ -214,83 +291,7 @@ int main(void) {
     InitWindow(SCREEN_H, SCREEN_W, "2D Cloth Simulation");
     SetTargetFPS(FPS);
 
-    while (!WindowShouldClose()) {
-        // Handle input
-        if (IsKeyPressed(KEY_SPACE)) paused = !paused;
-        if (IsKeyPressed(KEY_ENTER))
-            update_physics(points, links, 1 / (float)FPS, buffer);
-        if (IsKeyPressed(KEY_LEFT)) wind.x -= 100.0;
-        if (IsKeyPressed(KEY_RIGHT)) wind.x += 100.0;
-        if (IsKeyPressed(KEY_MINUS)) g.y -= INIT_G / 2;
-        if (IsKeyPressed(KEY_EQUAL)) g.y += INIT_G / 2;
-
-        wind.x += GetMouseWheelMove() * 40.0;
-        Vector2 mouse_pos = GetMousePosition();
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            // Set clicked_particle before dragging starts
-            // so it doesn't change with mouse pos
-            if (!dragging) {
-                clicked_particle = nearest_particle(points, mouse_pos);
-            }
-            // Initiate dragging if mouse position delta is big enough
-            if (Vector2Length(GetMouseDelta()) > 1.0 &&
-                clicked_particle != NULL) {
-                dragging = true;
-            }
-            // Update particle position based on mouse position
-            if (dragging) {
-                Vector2 drag_acc = Vector2Scale(
-                    Vector2Subtract(mouse_pos, clicked_particle->r), 10.0);
-                mot_integrate_verlet(&clicked_particle->r, drag_acc,
-                                     clicked_particle->r, 0.1, 0);
-            }
-        }
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-            if (dragging) {
-                dragging = false;
-            } else if (clicked_particle != NULL) {
-                clicked_particle->is_static = !clicked_particle->is_static;
-            } else if (CheckCollisionPointRec(mouse_pos, help_rect)) {
-                show_help = true;
-            }
-        }
-
-        // Show help dialog
-        if (show_help) {
-            BeginDrawing();
-            DrawRectangle(100, 50, SCREEN_H - 200, SCREEN_W - 100, LIGHTGRAY);
-            // TODO : change font family
-            DrawText(help_text, 170, 130, 24, BLACK);
-            EndDrawing();
-
-            if (IsKeyReleased(KEY_ENTER) ||
-                IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-                show_help = false;
-            }
-            continue;
-        }
-
-        if (!paused) update_physics(points, links, 1 / (float)FPS, buffer);
-
-        BeginDrawing();
-        {
-            ClearBackground(BLACK);
-
-            for (size_t i = 0; i < links.count; i++) {
-                Link link = links.items[i];
-                DrawLine(link.p1->r.x, link.p1->r.y, link.p2->r.x, link.p2->r.y,
-                         GRAY);
-            }
-            for (size_t i = 0; i < points.count; i++) {
-                const Particle p = points.items[i];
-                DrawCircle(p.r.x, p.r.y, RADIUS, p.is_static ? RED : WHITE);
-            }
-
-            DrawRectangleRounded(help_rect, 0.1, 1, RED);
-            DrawText("?", help_x, help_y, help_font, LIGHTGRAY);
-        }
-        EndDrawing();
-    }
+    rayutl_mainloop(UpdateDrawFrame, FPS);
 
     CloseWindow();
     utl_da_free(links);

@@ -1,13 +1,15 @@
-CC = gcc
-BIN := ./bin
-SRC := ./src
-SRCS := $(wildcard $(SRC)/*.c)
-PROGRAMS := $(patsubst $(SRC)/%.c,%,$(SRCS))
-CFLAGS := -Wall -Wextra -pedantic
-CFLAGS += -isystem ./ext/raygui -I./ext/raylib/include -I./include
-LDLIBS := -lraylib
-LDFLAGS :=
-DEBUG ?= 0
+CC            := gcc
+BIN           := ./bin
+SRC           := ./src
+WEB           := ./web
+SRCS          := $(wildcard $(SRC)/*.c)
+PROGRAMS      := $(patsubst $(SRC)/%.c,%,$(SRCS))
+CFLAGS        := -Wall -Wextra -pedantic
+INC           := -isystem ./ext/raygui -I./ext/raylib/include -I./include
+LDLIBS        := -lraylib
+LDFLAGS       := 
+EMSDK_VERSION  = 
+DEBUG         ?= 0
 
 ifeq ($(DEBUG),0)
 	CFLAGS += -O2
@@ -30,11 +32,21 @@ else
 endif
 
 
-.PHONY: $(PROGRAMS)
+.PHONY: $(PROGRAMS) default gen-web
 
 default:
 	@echo No default target exists as of right now.
 	@echo Please specify a target
 
 $(PROGRAMS): % : $(SRC)/%.c
-	$(CC) $(CFLAGS) -o ./bin/$@ $(SRC)/$@.c $(LDFLAGS) $(LDLIBS)
+	$(CC) $(CFLAGS) $(INC) -o ./bin/$@ $(SRC)/$@.c $(LDFLAGS) $(LDLIBS)
+
+.SECONDEXPANSION:
+$(WEB)/%: $(SRC)/$$**.c ./shell.html
+	mkdir -p $@ 
+	emcc -o $@/index.html $(SRC)/$*.c -Os $(INC) ./ext/raylib/lib_web/libraylib.a \
+	-I. -I./ext/raylib/include -I./include -L. -L./ext/raylib/lib_web/libraylib.a -s \
+	USE_GLFW=3 --shell-file ./shell.html -DPLATFORM_WEB
+
+gen-web: $(patsubst $(SRC)/%.c,$(WEB)/%,$(SRCS))
+	

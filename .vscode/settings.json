@@ -11,11 +11,15 @@
         "xmemory": "c",
         "xstring": "c",
         "xutility": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "rayutl.h": "c"
     },
     "cSpell.words": [
+        "emscripten",
         "LIGHTGRAY",
         "RAYGUI",
+        "raylib",
+        "rayutl",
         "symplectic",
         "verlet"
     ]
