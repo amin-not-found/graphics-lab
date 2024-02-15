@@ -218,10 +218,6 @@ void UpdateDrawFrame(void) {
 }
 
 int main(void) {
-#ifdef DEBUG
-    utl_set_log_level(UTL_DEBUG);
-#endif
-
     help_rect = (Rectangle){help_x - 13, help_y - 8, 41, 41};
     utl_da_init(points, GRID_W * GRID_H);
     utl_da_init(links, 0);

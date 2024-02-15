@@ -76,7 +76,11 @@ int safeWrap(int value, int max);
 
 #ifdef UTL_IMPLEMENTATION
 // dont't show debug logs by default
+#ifdef DEBUG
+static utl_log_level log_level = UTL_DEBUG;
+#else
 static utl_log_level log_level = UTL_INFO;
+#endif
 
 void utl_set_log_level(utl_log_level level) { log_level = level; }
 void utl_log(utl_log_level level, const char *format, ...) {

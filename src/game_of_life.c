@@ -62,10 +62,8 @@ InputBox active_input_box = 0;
 void recalculate_cell_size(int containerWidth, int containerHeight) {
     cell_width = (float)containerWidth / grid_w;
     cell_height = (float)containerHeight / (grid_h);
-#ifdef DEBUG
     utl_log(UTL_DEBUG, "Set Cell Size - cw: %f, ch: %f\n", cell_width,
             cell_width);
-#endif
 }
 
 int neighbors_count(int x, int y) {
