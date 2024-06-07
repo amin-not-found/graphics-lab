@@ -12,7 +12,8 @@
         "xstring": "c",
         "xutility": "c",
         "time.h": "c",
-        "rayutl.h": "c"
+        "rayutl.h": "c",
+        "raymath.h": "c"
     },
     "cSpell.words": [
         "emscripten",
