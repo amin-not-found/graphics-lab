@@ -1,10 +1,11 @@
 // Estimating value off PI using Monte Carlo's Method
 
+#include <stdio.h>
+#include <time.h>
+
 #include "raylib.h"
 #include "raymath.h"
 #include "rayutl.h"
-#include <stdio.h>
-#include <time.h>
 
 #define WIN_DIM 700
 #define POINT_SIZE 2
@@ -32,7 +33,7 @@ void UpdateDrawFrame() {
     all_count++;
 
     double pi = 4.0 * inside_count / all_count;
-    sprintf(text,"PI: %lf",pi);
+    sprintf(text, "PI: %lf", pi);
 
     BeginTextureMode(screen);
     DrawCircle(x, y, POINT_SIZE, color);

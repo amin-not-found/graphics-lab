@@ -43,28 +43,28 @@ struct {
 */
 
 // you can initialize values yourself or use this macro
-#define utl_da_init(a, size)                                                   \
-    do {                                                                       \
-        (a).count = 0;                                                         \
-        (a).items = NULL;                                                      \
-        utl_da_resize((a), (size) < UTL_MIN_CAP ? UTL_MIN_CAP : (size));       \
+#define utl_da_init(a, size)                                             \
+    do {                                                                 \
+        (a).count = 0;                                                   \
+        (a).items = NULL;                                                \
+        utl_da_resize((a), (size) < UTL_MIN_CAP ? UTL_MIN_CAP : (size)); \
     } while (0);
 
-#define utl_da_resize(a, new_size)                                             \
-    do {                                                                       \
-        (a).capacity = (new_size);                                             \
-        (a).items =                                                            \
-            UTL_REALLOC((a).items, (a).capacity * sizeof(*((a).items)));       \
-        if ((a).count > (a).capacity) (a).count = (a).capacity;                \
+#define utl_da_resize(a, new_size)                                       \
+    do {                                                                 \
+        (a).capacity = (new_size);                                       \
+        (a).items =                                                      \
+            UTL_REALLOC((a).items, (a).capacity * sizeof(*((a).items))); \
+        if ((a).count > (a).capacity) (a).count = (a).capacity;          \
     } while (0);
 
-#define utl_da_append(a, item)                                                 \
-    do {                                                                       \
-        if ((a).capacity == 0) utl_da_init(a, UTL_MIN_CAP);                    \
-        if ((a).count >= (a).capacity) {                                       \
-            utl_da_resize(a, (a).capacity * 2);                                \
-        }                                                                      \
-        (a).items[(a).count++] = (item);                                       \
+#define utl_da_append(a, item)                              \
+    do {                                                    \
+        if ((a).capacity == 0) utl_da_init(a, UTL_MIN_CAP); \
+        if ((a).count >= (a).capacity) {                    \
+            utl_da_resize(a, (a).capacity * 2);             \
+        }                                                   \
+        (a).items[(a).count++] = (item);                    \
     } while (0);
 
 #define utl_da_append_many(a, items, count) assert(0 && "NOT IMPLEMENTED");
@@ -72,7 +72,8 @@ struct {
 #define utl_da_free(a) UTL_FREE((a).items)
 
 /******* Other utilities *******/
-int safeWrap(int value, int max);
+#define utl_array_size(a) (sizeof(a) / sizeof((a)[0]))
+int utl_safe_wrap(int value, int max);
 
 #ifdef UTL_IMPLEMENTATION
 // dont't show debug logs by default
@@ -87,21 +88,23 @@ void utl_log(utl_log_level level, const char *format, ...) {
     if (level < log_level) return;
 
     switch (level) {
-    case UTL_DEBUG:
-        fprintf(stderr, UTL_ANSI_GREEN "[DEBUG] " UTL_ANSI_RESET);
-        break;
-    case UTL_INFO:
-        fprintf(stderr, "[INFO] ");
-        break;
-    case UTL_WARNING:
-        fprintf(stderr, UTL_ANSI_YELLOW "[WARNING] " UTL_ANSI_RESET);
-        break;
-    case UTL_ERROR:
-        fprintf(stderr, UTL_ANSI_RED "ERROR " UTL_ANSI_RESET);
-        break;
-    default:
-        utl_log(UTL_ERROR, "{%d} utl log level doesn't exist.\n", (int)level);
-        exit(-1);
+        case UTL_DEBUG:
+            fprintf(stderr, UTL_ANSI_GREEN "[DEBUG] " UTL_ANSI_RESET);
+            break;
+        case UTL_INFO:
+            fprintf(stderr, "[INFO] ");
+            break;
+        case UTL_WARNING:
+            fprintf(stderr, UTL_ANSI_YELLOW "[WARNING] " UTL_ANSI_RESET);
+            break;
+        case UTL_ERROR:
+            fprintf(stderr, UTL_ANSI_RED "ERROR " UTL_ANSI_RESET);
+            break;
+        default:
+            utl_log(
+                UTL_ERROR, "{%d} utl log level doesn't exist.\n", (int)level
+            );
+            exit(-1);
     }
     va_list args;
     va_start(args, format);
@@ -110,8 +113,8 @@ void utl_log(utl_log_level level, const char *format, ...) {
     fprintf(stderr, "\n");
 }
 
-int safeWrap(int value, int max) { return ((value % max) + max) % max; }
+int utl_safe_wrap(int value, int max) { return ((value % max) + max) % max; }
 
-#endif // end of UTL_IMPLEMENTATION
+#endif  // end of UTL_IMPLEMENTATION
 
-#endif // end of COMMON_H header guard
+#endif  // end of COMMON_H header guard

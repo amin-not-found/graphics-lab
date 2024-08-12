@@ -6,11 +6,12 @@
 #include "raygui.h"
 #include "raylib.h"
 #define UTL_IMPLEMENTATION
-#include "rayutl.h"
-#include "utl.h"
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
+
+#include "rayutl.h"
+#include "utl.h"
 
 #define PANEL_H 70
 #define FPS 60
@@ -62,8 +63,9 @@ InputBox active_input_box = 0;
 void recalculate_cell_size(int containerWidth, int containerHeight) {
     cell_width = (float)containerWidth / grid_w;
     cell_height = (float)containerHeight / (grid_h);
-    utl_log(UTL_DEBUG, "Set Cell Size - cw: %f, ch: %f\n", cell_width,
-            cell_width);
+    utl_log(
+        UTL_DEBUG, "Set Cell Size - cw: %f, ch: %f\n", cell_width, cell_width
+    );
 }
 
 int neighbors_count(int x, int y) {
@@ -71,18 +73,22 @@ int neighbors_count(int x, int y) {
     for (int py = y - 1; py <= y + 1; py++) {
         for (int px = x - 1; px <= x + 1; px++) {
             // wrap around grid considering negative values
-            count += *index2d(buffer.items, safeWrap(px, grid_w),
-                              safeWrap(py, grid_h));
+            count += *index2d(
+                buffer.items, utl_safe_wrap(px, grid_w),
+                utl_safe_wrap(py, grid_h)
+            );
         }
     }
     return count - *index2d(grid.items, x, y);
 }
 
 void paint_cell(int x, int y) {
-    DrawRectangle((int)(x * cell_width), (int)(y * cell_height) + PANEL_H,
-                  // using  ceilf for consistency when grid_w % cell_width != 0
-                  (int)ceilf(cell_width), (int)ceilf(cell_height),
-                  *index2d(grid.items, x, y) ? WHITE : BLACK);
+    DrawRectangle(
+        (int)(x * cell_width), (int)(y * cell_height) + PANEL_H,
+        // using  ceilf for consistency when grid_w % cell_width != 0
+        (int)ceilf(cell_width), (int)ceilf(cell_height),
+        *index2d(grid.items, x, y) ? WHITE : BLACK
+    );
 }
 
 void paint(int x, int y, int brush_size, bool use_eraser) {
@@ -108,8 +114,8 @@ void paint(int x, int y, int brush_size, bool use_eraser) {
     int start_y = y - brush_size / 2;
     for (int y = start_y; y <= start_y + brush_size; y++) {
         for (int x = start_x; x <= start_x + brush_size; x++) {
-            int py = safeWrap(y, grid_h);
-            int px = safeWrap(x, grid_w);
+            int py = utl_safe_wrap(y, grid_h);
+            int px = utl_safe_wrap(x, grid_w);
             *index2d(grid.items, px, py) = !use_eraser;
             paint_cell(px, py);
         }
@@ -191,7 +197,7 @@ void UpdateDrawFrame(void) {
     if (IsKeyPressed(KEY_UP))
         active_input_box = (active_input_box + 1) % InputBoxCount;
     if (IsKeyPressed(KEY_DOWN))
-        active_input_box = safeWrap(active_input_box - 1, InputBoxCount);
+        active_input_box = utl_safe_wrap(active_input_box - 1, InputBoxCount);
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
         Vector2 mouse_pos = GetMousePosition();
         int x = mouse_pos.x / cell_width;
@@ -213,9 +219,10 @@ void UpdateDrawFrame(void) {
 #ifdef DEBUG
                 char text[10];
                 sprintf(text, "%d", neighbors_count(x, y));
-                DrawText(text, (int)(x * cell_width) + 5,
-                         (int)(y * cell_width) + PANEL_H + 5, cell_width / 3,
-                         RED);
+                DrawText(
+                    text, (int)(x * cell_width) + 5,
+                    (int)(y * cell_width) + PANEL_H + 5, cell_width / 3, RED
+                );
 #endif
             }
         }
@@ -234,37 +241,46 @@ void UpdateDrawFrame(void) {
         // Draw randomize and clear button
         x_offset = screen_width * 0.02 + width;
         width = screen_width * 0.15;
-        randomize_btn = GuiButton((Rectangle){x_offset, 3, width, 32},
-                                  "Randomize Grid (R)");
+        randomize_btn = GuiButton(
+            (Rectangle){x_offset, 3, width, 32}, "Randomize Grid (R)"
+        );
         clear_btn =
             GuiButton((Rectangle){x_offset, 33, width, 32}, "Clear Grid (C)");
 
         // Draw Pause and Next step button
         width = screen_width * 0.18;
         x_offset = (screen_width - width) / 2.6;
+
         next_step_btn =
             GuiButton((Rectangle){x_offset, 5, width, 30}, "Next Step (N)");
+
         if (paused) GuiSetState(STATE_FOCUSED);
-        pause_btn = GuiButton((Rectangle){x_offset + width + 5, 5, width, 30},
-                              "Pause (Space)");
+        pause_btn = GuiButton(
+            (Rectangle){x_offset + width + 5, 5, width, 30}, "Pause (Space)"
+        );
         GuiSetState(STATE_NORMAL);
 
         // Draw spinners for slowness and brush size
-        GuiSpinner((Rectangle){x_offset + width / 4 + 20, 40, width / 2, 20},
-                   "Slowness: ", &update_delay_rate, 1, FPS, false);
+        GuiSpinner(
+            (Rectangle){x_offset + width / 4 + 20, 40, width / 2, 20},
+            "Slowness: ", &update_delay_rate, 1, FPS, false
+        );
         GuiSpinner(
             (Rectangle){x_offset + width * 4 / 3 + 20, 40, width / 2, 20},
-            "BrushSize: ", &brush_size, 1, FPS, false);
+            "BrushSize: ", &brush_size, 1, FPS, false
+        );
 
         // Draw spinners for controlling grid size
         width = screen_width * 0.2;
         x_offset = screen_width - (width + screen_width * 0.01);
-        grid_w_box = GuiValueBox((Rectangle){x_offset, 10, width, 20},
-                                 "Grid Width: ", &new_grid_w, 1, screen_width,
-                                 active_input_box == GridWBox);
-        grid_h_box = GuiValueBox((Rectangle){x_offset, 40, width, 20},
-                                 "Grid Height: ", &new_grid_h, 1, screen_width,
-                                 active_input_box == GridHBox);
+        grid_w_box = GuiValueBox(
+            (Rectangle){x_offset, 10, width, 20}, "Grid Width: ", &new_grid_w,
+            1, screen_width, active_input_box == GridWBox
+        );
+        grid_h_box = GuiValueBox(
+            (Rectangle){x_offset, 40, width, 20}, "Grid Height: ", &new_grid_h,
+            1, screen_width, active_input_box == GridHBox
+        );
     }
     EndDrawing();
 }
@@ -285,7 +301,7 @@ int main(void) {
     SetTraceLogLevel(LOG_WARNING);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screen_width, screen_height, "Conway's Game of Life");
-    
+
     rayutl_mainloop(UpdateDrawFrame, 0);
 
     utl_da_free(buffer);

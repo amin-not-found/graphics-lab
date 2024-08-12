@@ -84,7 +84,6 @@ const char *help_text =
     "Press Enter or click anywhere to resume. \n\n\n\n";
 /* End of declarations */
 
-
 void update_physics(float dt) {
     // Accumulate forces for each particle
     for (size_t i = 0; i < points.count; i++) {
@@ -119,7 +118,8 @@ void update_physics(float dt) {
         // displacement = delta * 0.5 * diff, and
         // diff = (delta_len - link.size)/delta_len
         Vector2 displacement = Vector2Scale(
-            delta, 0.5 * (delta_len - links.items[i].size) / delta_len);
+            delta, 0.5 * (delta_len - links.items[i].size) / delta_len
+        );
         if (!p1->is_static) p1->r = Vector2Add(p1->r, displacement);
         if (!p2->is_static) p2->r = Vector2Subtract(p2->r, displacement);
     }
@@ -165,9 +165,11 @@ void UpdateDrawFrame(void) {
         // Update particle position based on mouse position
         if (dragging) {
             Vector2 drag_acc = Vector2Scale(
-                Vector2Subtract(mouse_pos, clicked_particle->r), 10.0);
-            mot_integrate_verlet(&clicked_particle->r, drag_acc,
-                                 clicked_particle->r, 0.1, 0);
+                Vector2Subtract(mouse_pos, clicked_particle->r), 10.0
+            );
+            mot_integrate_verlet(
+                &clicked_particle->r, drag_acc, clicked_particle->r, 0.1, 0
+            );
         }
     }
     if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
@@ -203,8 +205,9 @@ void UpdateDrawFrame(void) {
 
         for (size_t i = 0; i < links.count; i++) {
             Link link = links.items[i];
-            DrawLine(link.p1->r.x, link.p1->r.y, link.p2->r.x, link.p2->r.y,
-                     GRAY);
+            DrawLine(
+                link.p1->r.x, link.p1->r.y, link.p2->r.x, link.p2->r.y, GRAY
+            );
         }
         for (size_t i = 0; i < points.count; i++) {
             const Particle p = points.items[i];
@@ -257,14 +260,18 @@ int main(void) {
         for (int x = 0; x < GRID_W; x++) {
             // Connect to next horizontal particle
             if (x != GRID_W - 1) {
-                Link link = {index2d(points.items, x, y),
-                             index2d(points.items, x + 1, y), DISTANCE};
+                Link link = {
+                    index2d(points.items, x, y),
+                    index2d(points.items, x + 1, y), DISTANCE
+                };
                 utl_da_append(links, link);
             }
             // Connect to next vertical particle
             if (y != GRID_H - 1) {
-                Link link = {index2d(points.items, x, y),
-                             index2d(points.items, x, y + 1), DISTANCE};
+                Link link = {
+                    index2d(points.items, x, y),
+                    index2d(points.items, x, y + 1), DISTANCE
+                };
                 utl_da_append(links, link);
             }
             // // Connect to next diagonal particle
