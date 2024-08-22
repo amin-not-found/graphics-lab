@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <assert.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,8 +11,9 @@
 // Setting allocation functions
 #define UTL_FREE free
 #define UTL_REALLOC realloc
+#define UTL_ASSERT assert
 
-#define UTL_MIN_CAP 4
+#define UTL_DA_MIN_CAP 4
 
 #define UTL_ANSI_RED "\x1b[31m"
 #define UTL_ANSI_GREEN "\x1b[32m"
@@ -43,31 +45,48 @@ struct {
 */
 
 // you can initialize values yourself or use this macro
-#define utl_da_init(a, size)                                             \
-    do {                                                                 \
-        (a).count = 0;                                                   \
-        (a).items = NULL;                                                \
-        utl_da_resize((a), (size) < UTL_MIN_CAP ? UTL_MIN_CAP : (size)); \
+#define utl_da_init(a, size)                                                   \
+    do {                                                                       \
+        (a).count = 0;                                                         \
+        (a).items = NULL;                                                      \
+        utl_da_resize((a), (size) < UTL_DA_MIN_CAP ? UTL_DA_MIN_CAP : (size)); \
     } while (0);
 
-#define utl_da_resize(a, new_size)                                       \
-    do {                                                                 \
-        (a).capacity = (new_size);                                       \
-        (a).items =                                                      \
-            UTL_REALLOC((a).items, (a).capacity * sizeof(*((a).items))); \
-        if ((a).count > (a).capacity) (a).count = (a).capacity;          \
+#define utl_da_resize(a, new_size)                                            \
+    do {                                                                      \
+        (a).capacity = (new_size);                                            \
+        (a).items =                                                           \
+            UTL_REALLOC((a).items, (a).capacity * sizeof(*((a).items)));      \
+        UTL_ASSERT(                                                           \
+            (a).items != NULL && "Couldn't allocate memory for dynamic array" \
+        );                                                                    \
+        if ((a).count > (a).capacity) (a).count = (a).capacity;               \
     } while (0);
 
-#define utl_da_append(a, item)                              \
-    do {                                                    \
-        if ((a).capacity == 0) utl_da_init(a, UTL_MIN_CAP); \
-        if ((a).count >= (a).capacity) {                    \
-            utl_da_resize(a, (a).capacity * 2);             \
-        }                                                   \
-        (a).items[(a).count++] = (item);                    \
+#define utl_da_append(a, item)                                 \
+    do {                                                       \
+        if ((a).capacity == 0) utl_da_init(a, UTL_DA_MIN_CAP); \
+        if ((a).count >= (a).capacity) {                       \
+            utl_da_resize(a, (a).capacity * 2);                \
+        }                                                      \
+        (a).items[(a).count++] = (item);                       \
     } while (0);
 
-#define utl_da_append_many(a, items, count) assert(0 && "NOT IMPLEMENTED");
+#define utl_da_append_many(a, new_items, items_count)              \
+    do {                                                           \
+        if ((a).count + (items_count) > (a).capacity) {            \
+            if ((a).capacity == 0) utl_da_init(a, UTL_DA_MIN_CAP); \
+            while ((a).count + (items_count) > (a).capacity) {     \
+                (a).capacity *= 2;                                 \
+            }                                                      \
+            utl_da_resize(a, (a).capacity);                        \
+        }                                                          \
+        memcpy(                                                    \
+            (a).items + (a).count, &(new_items),                    \
+            (items_count) * sizeof(*((a).items))                   \
+        );                                                         \
+        (a).count += (items_count);                                \
+    } while (0);
 
 #define utl_da_free(a) UTL_FREE((a).items)
 
