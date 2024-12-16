@@ -62,12 +62,12 @@ Particle *clicked_particle = NULL;
 Vector2 g = {0, INIT_G};
 Vector2 wind = {0, 0};
 
-const float start_x = (SCREEN_H - (GRID_W - 1) * DISTANCE) / 2;
-const float start_y = (SCREEN_W - (GRID_H - 1) * DISTANCE) / 4;
+const float START_X = (SCREEN_H - (GRID_W - 1) * DISTANCE) / 2;
+const float START_Y = (SCREEN_W - (GRID_H - 1) * DISTANCE) / 4;
 
-const int help_x = SCREEN_H - 50;
-const int help_y = 36;
-const int help_font = 27;
+const int HELP_X = SCREEN_H - 50;
+const int HELP_Y = 36;
+const int HELP_FONT = 27;
 Rectangle help_rect;
 bool show_help = false;
 
@@ -141,7 +141,7 @@ Particle *nearest_particle(Points points, Vector2 pos) {
     return result;
 }
 
-void UpdateDrawFrame(void) {
+void update_draw_frame(void) {
     // Handle input
     if (IsKeyPressed(KEY_SPACE)) paused = !paused;
     if (IsKeyPressed(KEY_ENTER)) update_physics(1 / (float)FPS);
@@ -215,13 +215,13 @@ void UpdateDrawFrame(void) {
         }
 
         DrawRectangleRounded(help_rect, 0.1, 1, RED);
-        DrawText("?", help_x, help_y, help_font, LIGHTGRAY);
+        DrawText("?", HELP_X, HELP_Y, HELP_FONT, LIGHTGRAY);
     }
     EndDrawing();
 }
 
 int main(void) {
-    help_rect = (Rectangle){help_x - 13, help_y - 8, 41, 41};
+    help_rect = (Rectangle){HELP_X - 13, HELP_Y - 8, 41, 41};
     utl_da_init(points, GRID_W * GRID_H);
     utl_da_init(links, 0);
     utl_da_init(buffer, points.capacity);
@@ -237,8 +237,8 @@ int main(void) {
     for (int y = 0; y < GRID_H; y++) {
         for (int x = 0; x < GRID_W; x++) {
             Particle *p = index2d(points.items, x, y);
-            p->r.x = start_x + x * DISTANCE;
-            p->r.y = start_y + y * DISTANCE;
+            p->r.x = START_X + x * DISTANCE;
+            p->r.y = START_Y + y * DISTANCE;
             p->mass = PARTICLE_MASS;
         }
     }
@@ -294,7 +294,7 @@ int main(void) {
     InitWindow(SCREEN_H, SCREEN_W, "2D Cloth Simulation");
     SetTargetFPS(FPS);
 
-    rayutl_mainloop(UpdateDrawFrame, FPS);
+    rayutl_mainloop(update_draw_frame, FPS);
 
     CloseWindow();
     utl_da_free(links);

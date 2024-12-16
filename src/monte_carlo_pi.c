@@ -11,22 +11,22 @@
 #define POINT_SIZE 2
 #define FPS 200
 
-const int center = WIN_DIM / 2;
-const int r2 = WIN_DIM * WIN_DIM / 4;
+const int CENTER = WIN_DIM / 2;
+const int R2 = WIN_DIM * WIN_DIM / 4;
 
 RenderTexture2D screen;
 unsigned int inside_count = 0;
 unsigned int all_count = 0;
 
-void UpdateDrawFrame() {
+void update_draw_frame() {
     char text[13];
     int x = GetRandomValue(0, WIN_DIM);
     int y = GetRandomValue(0, WIN_DIM);
     Color color = RED;
 
-    int dx = center - x;
-    int dy = center - y;
-    if ((dx * dx + dy * dy) <= r2) {
+    int dx = CENTER - x;
+    int dy = CENTER - y;
+    if ((dx * dx + dy * dy) <= R2) {
         color = GREEN;
         inside_count++;
     }
@@ -44,7 +44,7 @@ void UpdateDrawFrame() {
     BeginDrawing();
     ClearBackground(BLACK);
     DrawTexture(screen.texture, 0, 0, WHITE);
-    DrawRing((Vector2){center, center}, center - 1, center, 0, 360, 64, WHITE);
+    DrawRing((Vector2){CENTER, CENTER}, CENTER - 1, CENTER, 0, 360, 64, WHITE);
     DrawText(text, 10, 10, 20, RAYWHITE);
     EndDrawing();
 }
@@ -54,7 +54,7 @@ int main() {
     InitWindow(WIN_DIM, WIN_DIM, "Monte Carlo Pi");
     screen = LoadRenderTexture(WIN_DIM, WIN_DIM);
 
-    rayutl_mainloop(UpdateDrawFrame, FPS);
+    rayutl_mainloop(update_draw_frame, FPS);
 
     CloseWindow();
     UnloadRenderTexture(screen);

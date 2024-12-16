@@ -74,7 +74,8 @@ int neighbors_count(int x, int y) {
         for (int px = x - 1; px <= x + 1; px++) {
             // wrap around grid considering negative values
             count += *index2d(
-                buffer.items, utl_safe_wrap(px, grid_w),
+                buffer.items,
+                utl_safe_wrap(px, grid_w),
                 utl_safe_wrap(py, grid_h)
             );
         }
@@ -84,9 +85,11 @@ int neighbors_count(int x, int y) {
 
 void paint_cell(int x, int y) {
     DrawRectangle(
-        (int)(x * cell_width), (int)(y * cell_height) + PANEL_H,
+        (int)(x * cell_width),
+        (int)(y * cell_height) + PANEL_H,
         // using  ceilf for consistency when grid_w % cell_width != 0
-        (int)ceilf(cell_width), (int)ceilf(cell_height),
+        (int)ceilf(cell_width),
+        (int)ceilf(cell_height),
         *index2d(grid.items, x, y) ? WHITE : BLACK
     );
 }
@@ -181,7 +184,7 @@ int resize_grid(int new_grid_w, int new_grid_h) {
     return 0;
 }
 
-void UpdateDrawFrame(void) {
+void update_draw_frame(void) {
     screen_width = GetScreenWidth();
     screen_height = GetScreenHeight();
     grid_update_pos = (grid_update_pos + 1) % update_delay_rate;
@@ -220,8 +223,11 @@ void UpdateDrawFrame(void) {
                 char text[10];
                 sprintf(text, "%d", neighbors_count(x, y));
                 DrawText(
-                    text, (int)(x * cell_width) + 5,
-                    (int)(y * cell_width) + PANEL_H + 5, cell_width / 3, RED
+                    text,
+                    (int)(x * cell_width) + 5,
+                    (int)(y * cell_width) + PANEL_H + 5,
+                    cell_width / 3,
+                    RED
                 );
 #endif
             }
@@ -263,23 +269,39 @@ void UpdateDrawFrame(void) {
         // Draw spinners for slowness and brush size
         GuiSpinner(
             (Rectangle){x_offset + width / 4 + 20, 40, width / 2, 20},
-            "Slowness: ", &update_delay_rate, 1, FPS, false
+            "Slowness: ",
+            &update_delay_rate,
+            1,
+            FPS,
+            false
         );
         GuiSpinner(
             (Rectangle){x_offset + width * 4 / 3 + 20, 40, width / 2, 20},
-            "BrushSize: ", &brush_size, 1, FPS, false
+            "BrushSize: ",
+            &brush_size,
+            1,
+            FPS,
+            false
         );
 
         // Draw spinners for controlling grid size
         width = screen_width * 0.2;
         x_offset = screen_width - (width + screen_width * 0.01);
         grid_w_box = GuiValueBox(
-            (Rectangle){x_offset, 10, width, 20}, "Grid Width: ", &new_grid_w,
-            1, screen_width, active_input_box == GridWBox
+            (Rectangle){x_offset, 10, width, 20},
+            "Grid Width: ",
+            &new_grid_w,
+            1,
+            screen_width,
+            active_input_box == GridWBox
         );
         grid_h_box = GuiValueBox(
-            (Rectangle){x_offset, 40, width, 20}, "Grid Height: ", &new_grid_h,
-            1, screen_width, active_input_box == GridHBox
+            (Rectangle){x_offset, 40, width, 20},
+            "Grid Height: ",
+            &new_grid_h,
+            1,
+            screen_width,
+            active_input_box == GridHBox
         );
     }
     EndDrawing();
@@ -302,7 +324,7 @@ int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screen_width, screen_height, "Conway's Game of Life");
 
-    rayutl_mainloop(UpdateDrawFrame, 0);
+    rayutl_mainloop(update_draw_frame, 0);
 
     utl_da_free(buffer);
     utl_da_free(grid);
