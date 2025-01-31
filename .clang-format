@@ -1,5 +1,13 @@
 BasedOnStyle: Google
+
 IndentWidth: 4
-AlignAfterOpenBracket: BlockIndent
+
 BinPackArguments: false
+BinPackParametersStyle: OnePerLine
+
+AlignOperands: DontAlign
+AlignAfterOpenBracket: BlockIndent
+BreakBeforeBinaryOperators: None
+
 AllowShortIfStatementsOnASingleLine: true
+

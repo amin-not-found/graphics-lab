@@ -48,7 +48,7 @@ $(PROGRAMS): % : $(SRC)/%.c
 $(WEB)/%: $(SRC)/$$**.c ./shell.html
 	mkdir -p $@ 
 	emcc -o $@/index.html $(SRC)/$*.c -Os $(INC) ./ext/raylib/lib_web/libraylib.a \
-	-I. -I./ext/raylib/include -I./include -L. -L./ext/raylib/lib_web/libraylib.a -s \
+	-L. -L./ext/raylib/lib_web/libraylib.a -s \
 	USE_GLFW=3 --shell-file ./shell.html -DPLATFORM_WEB
 
 gen-web: $(patsubst $(SRC)/%.c,$(WEB)/%,$(SRCS))

@@ -94,6 +94,9 @@ struct {
 #define utl_array_size(a) (sizeof(a) / sizeof((a)[0]))
 int utl_safe_wrap(int value, int max);
 
+inline float util_wrap_angle( float angle );
+
+
 #ifdef UTL_IMPLEMENTATION
 // dont't show debug logs by default
 #ifdef DEBUG
@@ -133,6 +136,12 @@ void utl_log(utl_log_level level, const char *format, ...) {
 }
 
 int utl_safe_wrap(int value, int max) { return ((value % max) + max) % max; }
+
+inline float util_wrap_angle( float angle )
+{
+    double twoPi = 2.0 * PI;
+    return angle - twoPi * floor( angle / twoPi );
+}
 
 #endif  // end of UTL_IMPLEMENTATION
 
