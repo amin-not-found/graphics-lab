@@ -7,6 +7,7 @@
 #include "raylib.h"
 #define UTL_IMPLEMENTATION
 #include <math.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 

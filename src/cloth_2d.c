@@ -2,7 +2,7 @@
 // based on
 // http://web.archive.org/web/20070610223835/http://www.teknikus.dk/tj/gdc2001.htm
 
-#define RAYGUI_IMPLEMENTATION
+#include <stdlib.h>
 #include "raylib.h"
 #include "raymath.h"
 #define MOTION_IMPLEMENTATION
@@ -57,7 +57,7 @@ Vector2Buffer buffer;
 
 bool paused = false;
 bool dragging = false;
-Particle *clicked_particle = NULL;
+Particle *clicked_node = NULL;
 
 Vector2 g = {0, INIT_G};
 Vector2 wind = {0, 0};
@@ -156,27 +156,26 @@ void update_draw_frame(void) {
         // Set clicked_particle before dragging starts
         // so it doesn't change with mouse pos
         if (!dragging) {
-            clicked_particle = nearest_particle(points, mouse_pos);
+            clicked_node = nearest_particle(points, mouse_pos);
         }
         // Initiate dragging if mouse position delta is big enough
-        if (Vector2Length(GetMouseDelta()) > 1.0 && clicked_particle != NULL) {
+        if (Vector2Length(GetMouseDelta()) > 1.0 && clicked_node != NULL) {
             dragging = true;
         }
         // Update particle position based on mouse position
         if (dragging) {
-            Vector2 drag_acc = Vector2Scale(
-                Vector2Subtract(mouse_pos, clicked_particle->r), 10.0
-            );
+            Vector2 drag_acc =
+                Vector2Scale(Vector2Subtract(mouse_pos, clicked_node->r), 10.0);
             mot_integrate_verlet(
-                &clicked_particle->r, drag_acc, clicked_particle->r, 0.1, 0
+                &clicked_node->r, drag_acc, clicked_node->r, 0.1, 0
             );
         }
     }
     if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
         if (dragging) {
             dragging = false;
-        } else if (clicked_particle != NULL) {
-            clicked_particle->is_static = !clicked_particle->is_static;
+        } else if (clicked_node != NULL) {
+            clicked_node->is_static = !clicked_node->is_static;
         } else if (CheckCollisionPointRec(mouse_pos, help_rect)) {
             show_help = true;
         }
@@ -262,7 +261,8 @@ int main(void) {
             if (x != GRID_W - 1) {
                 Link link = {
                     index2d(points.items, x, y),
-                    index2d(points.items, x + 1, y), DISTANCE
+                    index2d(points.items, x + 1, y),
+                    DISTANCE
                 };
                 utl_da_append(links, link);
             }
@@ -270,7 +270,8 @@ int main(void) {
             if (y != GRID_H - 1) {
                 Link link = {
                     index2d(points.items, x, y),
-                    index2d(points.items, x, y + 1), DISTANCE
+                    index2d(points.items, x, y + 1),
+                    DISTANCE
                 };
                 utl_da_append(links, link);
             }
