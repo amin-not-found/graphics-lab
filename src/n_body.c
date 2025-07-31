@@ -1,6 +1,4 @@
-// 2D cloth simulation
-// based on
-// http://web.archive.org/web/20070610223835/http://www.teknikus.dk/tj/gdc2001.htm
+// N-Body physics simulation
 
 #include <stdlib.h>
 #include <math.h>
@@ -286,6 +284,28 @@ int main(void) {
             .a = Vector2Zero(),
             .mass = 81,
             .is_static = false,
+        }
+    };
+    const float AU_SCALE =
+        3.0 / 8.8 * WIN_H / 1;  // fill 3/8 of window with 1 AU
+    Particle solar_system[] = {
+        {
+            // sun
+            .r = WIN_H / 2,
+            .v = (Vector2){0, 0},
+            .a = (Vector2){0, 0},
+            .mass = 1.99e19,
+            .is_static = false,
+
+        },
+        {
+            // earth
+            .r = WIN_H / 2 + 1 * AU_SCALE,
+            .v = (Vector2){0, 0},
+            .a = (Vector2){0, 0},
+            .mass = 5.97e13,
+            .is_static = false,
+
         }
     };
 

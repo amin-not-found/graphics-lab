@@ -1,6 +1,7 @@
-// 2D cloth simulation
+// 2D cloth simulation using particles with spring forces
 // based on
-// http://web.archive.org/web/20070610223835/http://www.teknikus.dk/tj/gdc2001.htm
+// http://web.archive.org/web/20070610223835/
+// http://www.teknikus.dk/tj/gdc2001.htm
 
 #include <stdlib.h>
 #include "raylib.h"
